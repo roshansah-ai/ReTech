@@ -1,0 +1,283 @@
+
+<section class="orders-page">
+
+  <div class="page-header">
+    <a routerLink="/" class="back-link">
+      ← Continue Shopping
+    </a>
+
+    <h1>My Orders</h1>
+
+    <p>
+      View your ReTech purchases and track order progress.
+    </p>
+  </div>
+
+  <!-- LOGGED-IN CUSTOMER INFORMATION -->
+
+  <div class="search-card" *ngIf="currentCustomer() as customer">
+
+    <div>
+      <label>Customer Account</label>
+
+      <h3 style="margin: 8px 0 4px; color: #0f766e;">
+        {{ customer.name }}
+      </h3>
+
+      <p style="margin: 0; color: #64748b;">
+        {{ customer.email }}
+      </p>
+    </div>
+
+    <button
+      type="button"
+      (click)="searchOrders()"
+      [disabled]="loading()"
+      style="
+        margin-top: 15px;
+        padding: 11px 18px;
+        border: none;
+        border-radius: 9px;
+        background: #0f766e;
+        color: white;
+        font-weight: 700;
+        cursor: pointer;
+      "
+    >
+      {{ loading() ? 'Refreshing...' : 'Refresh Orders' }}
+    </button>
+
+  </div>
+
+  <!-- LOGIN REQUIRED -->
+
+  <div
+    class="empty-state"
+    *ngIf="!currentCustomer() && !loading()"
+  >
+
+    <h2>Customer Login Required</h2>
+
+    <p>
+      Please log in to your ReTech account to view
+      your order history.
+    </p>
+
+    <a routerLink="/login">
+      Login to Your Account →
+    </a>
+
+  </div>
+
+  <!-- ERROR MESSAGE -->
+
+  <p
+    class="error-message"
+    *ngIf="error() && currentCustomer()"
+  >
+    {{ error() }}
+  </p>
+
+  <!-- LOADING MESSAGE -->
+
+  <p
+    class="loading-message"
+    *ngIf="loading()"
+  >
+    Loading your orders...
+  </p>
+
+  <!-- NO ORDERS FOUND -->
+
+  <div
+    class="empty-state"
+    *ngIf="
+      currentCustomer() &&
+      searched() &&
+      !loading() &&
+      orders().length === 0
+    "
+  >
+
+    <h2>No Orders Yet</h2>
+
+    <p>
+      You haven't placed any orders using this account yet.
+    </p>
+
+    <a routerLink="/">
+      Explore Products →
+    </a>
+
+  </div>
+
+  <!-- CUSTOMER ORDERS -->
+
+  <div
+    class="orders-list"
+    *ngIf="currentCustomer() && orders().length > 0"
+  >
+
+    <p class="results-count">
+      {{ orders().length }} order(s) found
+    </p>
+
+    <article
+      class="order-card"
+      *ngFor="let order of orders(); trackBy: trackOrder"
+    >
+
+      <!-- ORDER HEADER -->
+
+      <div class="order-header">
+
+        <div>
+          <span class="small-label">
+            ORDER NUMBER
+          </span>
+
+          <h2>
+            #RT-{{ order.orderId }}
+          </h2>
+        </div>
+
+        <div>
+          <span class="small-label">
+            ORDER DATE
+          </span>
+
+          <p>
+            {{ order.createdAt | date:'mediumDate' }}
+          </p>
+        </div>
+
+        <span class="status-badge">
+          {{ getStatusLabel(order.orderStatus) }}
+        </span>
+
+      </div>
+
+      <!-- ORDER TRACKING -->
+
+      <div class="tracking">
+
+        <h3>Order Tracking</h3>
+
+        <div *ngIf="order.orderStatus === 'CANCELLED'"
+             class="error-message">
+          This order has been cancelled.
+        </div>
+
+        <div
+          class="tracking-steps"
+          *ngIf="order.orderStatus !== 'CANCELLED'"
+        >
+
+          <div
+            class="tracking-step"
+            [class.active]="getTrackingStep(order.orderStatus) >= 1"
+          >
+            <span class="step-circle">1</span>
+            <span>Placed</span>
+          </div>
+
+          <div
+            class="tracking-step"
+            [class.active]="getTrackingStep(order.orderStatus) >= 2"
+          >
+            <span class="step-circle">2</span>
+            <span>Processing</span>
+          </div>
+
+          <div
+            class="tracking-step"
+            [class.active]="getTrackingStep(order.orderStatus) >= 3"
+          >
+            <span class="step-circle">3</span>
+            <span>Shipped</span>
+          </div>
+
+          <div
+            class="tracking-step"
+            [class.active]="getTrackingStep(order.orderStatus) >= 4"
+          >
+            <span class="step-circle">4</span>
+            <span>Delivered</span>
+          </div>
+
+        </div>
+
+      </div>
+
+      <!-- ORDER PRODUCTS -->
+
+      <div class="order-items">
+
+        <h3>Products</h3>
+
+        <div
+          class="item-row"
+          *ngFor="let item of order.items"
+        >
+
+          <div>
+            <strong>
+              {{ item.productName }}
+            </strong>
+
+            <p>
+              Quantity: {{ item.quantity }}
+            </p>
+          </div>
+
+          <strong>
+            ₹{{ item.lineTotal | number:'1.0-2' }}
+          </strong>
+
+        </div>
+
+      </div>
+
+      <!-- ORDER FOOTER -->
+
+      <div class="order-footer">
+
+        <div>
+          <span class="small-label">
+            PAYMENT
+          </span>
+
+          <p>
+            {{ getStatusLabel(order.paymentStatus) }}
+          </p>
+        </div>
+
+        <div>
+          <span class="small-label">
+            PAYMENT METHOD
+          </span>
+
+          <p>
+            {{ getStatusLabel(order.paymentMethod) }}
+          </p>
+        </div>
+
+        <div class="total">
+
+          <span class="small-label">
+            ORDER TOTAL
+          </span>
+
+          <strong>
+            ₹{{ order.totalAmount | number:'1.0-2' }}
+          </strong>
+
+        </div>
+
+      </div>
+
+    </article>
+
+  </div>
+
+</section>

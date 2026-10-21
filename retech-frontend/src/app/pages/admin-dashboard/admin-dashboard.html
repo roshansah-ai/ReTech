@@ -1,0 +1,914 @@
+
+<section class="admin-page">
+
+  @if (!dashboard()) {
+
+    <div class="login-container">
+      <a routerLink="/" class="back-link">← Back to ReTech Store</a>
+
+      <div class="login-card">
+        <div class="admin-logo">R</div>
+        <h1>Admin Portal</h1>
+        <p>Sign in to manage your ReTech store.</p>
+
+        <form (ngSubmit)="login()">
+          <label for="username">Username</label>
+          <input id="username" name="username" type="text"
+                 [(ngModel)]="username" required
+                 autocomplete="username" />
+
+          <label for="password">Password</label>
+          <input id="password" name="password" type="password"
+                 [(ngModel)]="password" required
+                 autocomplete="current-password"
+                 placeholder="Enter admin password" />
+
+          @if (error()) {
+            <p class="error-message">{{ error() }}</p>
+          }
+
+          <button type="submit" class="primary-button"
+                  [disabled]="loading()">
+            {{ loading() ? 'Signing in...' : 'Sign In' }}
+          </button>
+        </form>
+
+        <p class="login-note">Authorized administrators only.</p>
+      </div>
+    </div>
+
+  } @else {
+
+    <div class="dashboard-container">
+
+      <div class="dashboard-header">
+        <div>
+          <span class="eyebrow">RETECH MANAGEMENT</span>
+          <h1>Admin Dashboard</h1>
+          <p>Monitor your store, inventory, products and orders.</p>
+        </div>
+
+        <button class="logout-button" (click)="logout()">
+          Sign Out
+        </button>
+      </div>
+
+      <nav class="admin-tabs">
+
+        <button type="button"
+                [class.active]="activeSection() === 'overview'"
+                (click)="activeSection.set('overview')">
+          📊 Overview
+        </button>
+
+        <button type="button"
+                [class.active]="activeSection() === 'products'"
+                (click)="openProducts()">
+          📦 Manage Products
+        </button>
+
+        <button type="button"
+                [class.active]="activeSection() === 'orders'"
+                (click)="openOrders()">
+          🚚 Manage Orders
+        </button>
+
+        <button type="button"
+                [class.active]="activeSection() === 'analytics'"
+                (click)="openAnalytics()">
+          📈 Inventory Analytics
+        </button>
+
+      </nav>
+
+      <!-- OVERVIEW -->
+
+      @if (activeSection() === 'overview') {
+
+        <div class="stats-grid">
+
+          <div class="stat-card">
+            <div class="stat-icon">📦</div>
+            <span>Total Products</span>
+            <strong>{{ dashboard()!.totalProducts }}</strong>
+            <small>Products in catalog</small>
+          </div>
+
+          <div class="stat-card">
+            <div class="stat-icon">🛒</div>
+            <span>Total Orders</span>
+            <strong>{{ dashboard()!.totalOrders }}</strong>
+            <small>Orders placed</small>
+          </div>
+
+          <div class="stat-card">
+            <div class="stat-icon">₹</div>
+            <span>Total Revenue</span>
+            <strong>
+              ₹{{ dashboard()!.totalRevenue | number:'1.0-2' }}
+            </strong>
+            <small>Total value of placed orders</small>
+          </div>
+
+          <div class="stat-card">
+            <div class="stat-icon">👥</div>
+            <span>Total Customers</span>
+            <strong>{{ dashboard()!.totalCustomers }}</strong>
+            <small>Unique checkout emails</small>
+          </div>
+
+        </div>
+
+        <div class="section-card">
+
+          <div class="section-header">
+            <h2>Recent Orders</h2>
+            <p>Latest customer purchases</p>
+          </div>
+
+          @if (dashboard()!.recentOrders.length === 0) {
+            <div class="empty-state">
+              No orders have been placed yet.
+            </div>
+          } @else {
+
+            <div class="table-wrapper">
+              <table>
+                <thead>
+                  <tr>
+                    <th>Order ID</th>
+                    <th>Customer</th>
+                    <th>Date</th>
+                    <th>Amount</th>
+                    <th>Payment</th>
+                    <th>Status</th>
+                  </tr>
+                </thead>
+
+                <tbody>
+                  <tr *ngFor="let order of dashboard()!.recentOrders; trackBy: trackOrder">
+                    <td class="order-id">#RT-{{ order.orderId }}</td>
+                    <td>
+                      <strong>{{ order.customerName }}</strong>
+                      <small>{{ order.email }}</small>
+                    </td>
+                    <td>{{ order.createdAt | date:'mediumDate' }}</td>
+                    <td>₹{{ order.totalAmount | number:'1.0-2' }}</td>
+                    <td>{{ order.paymentStatus }}</td>
+                    <td>
+                      <span class="status-badge">
+                        {{ order.orderStatus }}
+                      </span>
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+
+          }
+        </div>
+
+        <div class="quick-actions">
+          <h2>Store Management</h2>
+
+          <div class="actions-grid">
+
+            <div class="action-card">
+              <h3>📦 Product Management</h3>
+              <p>Add, edit and manage refurbished products.</p>
+              <button class="action-link" (click)="openProducts()">
+                Manage Products →
+              </button>
+            </div>
+
+            <div class="action-card">
+              <h3>🚚 Order Management</h3>
+              <p>Review orders and update delivery status.</p>
+              <button class="action-link" (click)="openOrders()">
+                Manage Orders →
+              </button>
+            </div>
+
+            <div class="action-card">
+              <h3>📈 Inventory Analytics</h3>
+              <p>Analyze inventory value, stock and categories.</p>
+              <button class="action-link" (click)="openAnalytics()">
+                View Analytics →
+              </button>
+            </div>
+
+          </div>
+        </div>
+
+      }
+
+      <!-- PRODUCT MANAGEMENT -->
+
+      @if (activeSection() === 'products') {
+
+        <div class="section-card products-section">
+
+          <div class="products-heading">
+            <div>
+              <span class="eyebrow">INVENTORY MANAGEMENT</span>
+              <h2>Product Management</h2>
+              <p>Add, update and manage your refurbished catalog.</p>
+            </div>
+
+            <button class="primary-button"
+                    (click)="openAddProduct()">
+              + Add Product
+            </button>
+          </div>
+
+          @if (productMessage()) {
+            <p class="success-message">{{ productMessage() }}</p>
+          }
+
+          @if (productError()) {
+            <p class="error-message">{{ productError() }}</p>
+          }
+
+          <div class="product-toolbar">
+            <input type="search"
+                   placeholder="Search name or brand..."
+                   [(ngModel)]="searchTerm" />
+
+            <select [(ngModel)]="categoryFilter">
+              <option value="">All Categories</option>
+              @for (category of categories; track category) {
+                <option [value]="category">{{ category }}</option>
+              }
+            </select>
+          </div>
+
+          @if (showProductForm()) {
+
+            <form class="product-form"
+                  (ngSubmit)="saveProduct()"
+                  #productFormRef="ngForm">
+
+              <h3>
+                {{ editingProductId() === null
+                   ? 'Add New Product'
+                   : 'Edit Product' }}
+              </h3>
+
+              <div class="form-grid">
+
+                <label>
+                  Product Name *
+                  <input name="name"
+                         [(ngModel)]="productForm.name" required />
+                </label>
+
+                <label>
+                  Brand *
+                  <input name="brand"
+                         [(ngModel)]="productForm.brand" required />
+                </label>
+
+                <label>
+                  Price (₹) *
+                  <input name="price" type="number"
+                         min="0.01" step="0.01"
+                         [(ngModel)]="productForm.price" required />
+                </label>
+
+                <label>
+                  Stock *
+                  <input name="stock" type="number"
+                         min="0" step="1"
+                         [(ngModel)]="productForm.stock" required />
+                </label>
+
+                <label>
+                  Category
+                  <input name="category"
+                         [(ngModel)]="productForm.category" />
+                </label>
+
+                <label>
+                  Condition Grade
+                  <select name="conditionGrade"
+                          [(ngModel)]="productForm.conditionGrade">
+                    <option value="A">Grade A</option>
+                    <option value="B">Grade B</option>
+                    <option value="C">Grade C</option>
+                  </select>
+                </label>
+
+                <label>
+                  Warranty (Months)
+                  <input name="warrantyMonths" type="number"
+                         min="0" step="1"
+                         [(ngModel)]="productForm.warrantyMonths" />
+                </label>
+
+                <label>
+                  Image URL
+                  <input name="imageUrl"
+                         [(ngModel)]="productForm.imageUrl"
+                         placeholder="https://..." />
+                </label>
+
+                <label class="full-width">
+                  Description
+                  <textarea name="description" rows="4"
+                            [(ngModel)]="productForm.description"></textarea>
+                </label>
+
+              </div>
+
+              <div class="form-actions">
+                <button type="button" class="logout-button"
+                        (click)="cancelProductForm()">
+                  Cancel
+                </button>
+
+                <button type="submit" class="primary-button"
+                        [disabled]="productSaving() || productFormRef.invalid">
+                  {{ productSaving() ? 'Saving...' : 'Save Product' }}
+                </button>
+              </div>
+
+            </form>
+          }
+
+          @if (productsLoading()) {
+            <div class="empty-state">Loading products...</div>
+          } @else if (filteredProducts.length === 0) {
+            <div class="empty-state">No matching products found.</div>
+          } @else {
+
+            <div class="table-wrapper">
+              <table class="products-table">
+                <thead>
+                  <tr>
+                    <th>Product</th>
+                    <th>Category</th>
+                    <th>Price</th>
+                    <th>Stock</th>
+                    <th>Grade</th>
+                    <th>Warranty</th>
+                    <th>Actions</th>
+                  </tr>
+                </thead>
+
+                <tbody>
+                  <tr *ngFor="let product of filteredProducts; trackBy: trackProduct">
+
+                    <td>
+                      <div class="product-identity">
+                        @if (product.imageUrl) {
+                          <img [src]="product.imageUrl"
+                               [alt]="product.name"
+                               class="product-thumbnail" />
+                        } @else {
+                          <div class="product-placeholder">📦</div>
+                        }
+                        <div>
+                          <strong>{{ product.name }}</strong>
+                          <small>{{ product.brand }}</small>
+                        </div>
+                      </div>
+                    </td>
+
+                    <td>{{ product.category || '—' }}</td>
+                    <td>₹{{ product.price | number:'1.0-2' }}</td>
+
+                    <td>
+                      <span class="stock-pill"
+                            [class.out-of-stock]="product.stock === 0">
+                        {{ product.stock === 0
+                           ? 'Out of Stock'
+                           : product.stock + ' Available' }}
+                      </span>
+                    </td>
+
+                    <td>{{ product.conditionGrade }}</td>
+                    <td>{{ product.warrantyMonths }} months</td>
+
+                    <td>
+                      <div class="table-actions">
+                        <button class="edit-button"
+                                (click)="editProduct(product)">
+                          Edit
+                        </button>
+                        <button class="delete-button"
+                                (click)="deleteProduct(product)">
+                          Delete
+                        </button>
+                      </div>
+                    </td>
+
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+
+          }
+        </div>
+
+      }
+
+      <!-- ORDER MANAGEMENT -->
+
+      @if (activeSection() === 'orders') {
+
+        <div class="section-card products-section">
+
+          <div class="products-heading">
+            <div>
+              <span class="eyebrow">ORDER MANAGEMENT</span>
+              <h2>Customer Orders</h2>
+              <p>Review purchases and manage delivery status.</p>
+            </div>
+
+            <button class="primary-button"
+                    [disabled]="ordersLoading()"
+                    (click)="loadOrders()">
+              {{ ordersLoading() ? 'Loading...' : 'Refresh Orders' }}
+            </button>
+          </div>
+
+          @if (orderMessage()) {
+            <p class="success-message">{{ orderMessage() }}</p>
+          }
+
+          @if (orderError()) {
+            <p class="error-message">{{ orderError() }}</p>
+          }
+
+          <div class="product-toolbar">
+            <input type="search"
+                   placeholder="Search order ID, customer or email..."
+                   [(ngModel)]="orderSearch" />
+
+            <select [(ngModel)]="orderStatusFilter">
+              <option value="">All Statuses</option>
+              <option value="PLACED">Placed</option>
+              <option value="CONFIRMED">Confirmed</option>
+              <option value="SHIPPED">Shipped</option>
+              <option value="DELIVERED">Delivered</option>
+              <option value="CANCELLED">Cancelled</option>
+            </select>
+          </div>
+
+          @if (ordersLoading()) {
+            <div class="empty-state">Loading customer orders...</div>
+          } @else if (filteredOrders.length === 0) {
+            <div class="empty-state">No matching orders found.</div>
+          } @else {
+
+            <div class="table-wrapper">
+              <table class="products-table">
+                <thead>
+                  <tr>
+                    <th>Order ID</th>
+                    <th>Customer</th>
+                    <th>Date</th>
+                    <th>Amount</th>
+                    <th>Payment</th>
+                    <th>Status</th>
+                    <th>Actions</th>
+                  </tr>
+                </thead>
+
+                <tbody>
+                  <tr *ngFor="let order of filteredOrders; trackBy: trackOrder">
+                    <td class="order-id">#RT-{{ order.orderId }}</td>
+                    <td>
+                      <strong>{{ order.customerName }}</strong>
+                      <small>{{ order.email }}</small>
+                    </td>
+                    <td>{{ order.createdAt | date:'mediumDate' }}</td>
+                    <td>₹{{ order.totalAmount | number:'1.0-2' }}</td>
+                    <td>{{ order.paymentStatus }}</td>
+                    <td>
+                      <span class="status-badge">
+                        {{ order.orderStatus }}
+                      </span>
+                    </td>
+                    <td>
+                      <button class="edit-button"
+                              (click)="viewOrder(order)">
+                        View Details
+                      </button>
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+
+          }
+
+          @if (selectedOrder(); as order) {
+
+            <div class="product-form order-detail-panel">
+
+              <div class="products-heading">
+                <div>
+                  <span class="eyebrow">ORDER DETAILS</span>
+                  <h2>Order #RT-{{ order.orderId }}</h2>
+                </div>
+
+                <button class="logout-button"
+                        (click)="closeOrder()">
+                  Close
+                </button>
+              </div>
+
+              <div class="form-grid">
+                <div>
+                  <strong>Customer</strong>
+                  <p>{{ order.customerName }}</p>
+                </div>
+
+                <div>
+                  <strong>Email</strong>
+                  <p>{{ order.email }}</p>
+                </div>
+
+                <div>
+                  <strong>Phone</strong>
+                  <p>{{ order.phone }}</p>
+                </div>
+
+                <div>
+                  <strong>Payment Method</strong>
+                  <p>{{ order.paymentMethod }}</p>
+                </div>
+
+                <div>
+                  <strong>Payment Status</strong>
+                  <p>{{ order.paymentStatus }}</p>
+                </div>
+
+                <div>
+                  <strong>Order Status</strong>
+                  <p>{{ order.orderStatus }}</p>
+                </div>
+
+                <div class="full-width">
+                  <strong>Delivery Address</strong>
+                  <p>{{ order.deliveryAddress }}</p>
+                </div>
+              </div>
+
+              <h3>Purchased Products</h3>
+
+              <div class="table-wrapper">
+                <table>
+                  <thead>
+                    <tr>
+                      <th>Product</th>
+                      <th>Quantity</th>
+                      <th>Unit Price</th>
+                      <th>Total</th>
+                    </tr>
+                  </thead>
+
+                  <tbody>
+                    @for (item of order.items; track $index) {
+                      <tr>
+                        <td>{{ item.productName }}</td>
+                        <td>{{ item.quantity }}</td>
+                        <td>₹{{ item.unitPrice | number:'1.0-2' }}</td>
+                        <td>₹{{ item.lineTotal | number:'1.0-2' }}</td>
+                      </tr>
+                    }
+                  </tbody>
+                </table>
+              </div>
+
+              <h3>
+                Order Total:
+                ₹{{ order.totalAmount | number:'1.0-2' }}
+              </h3>
+
+              <div class="form-actions">
+
+                @if (order.orderStatus === 'PLACED') {
+                  <button class="primary-button"
+                          [disabled]="orderSavingId() !== null"
+                          (click)="updateOrderStatus(order, 'CONFIRMED')">
+                    Confirm Order
+                  </button>
+                }
+
+                @if (order.orderStatus === 'CONFIRMED') {
+                  <button class="primary-button"
+                          [disabled]="orderSavingId() !== null"
+                          (click)="updateOrderStatus(order, 'SHIPPED')">
+                    Mark as Shipped
+                  </button>
+                }
+
+                @if (order.orderStatus === 'SHIPPED') {
+                  <button class="primary-button"
+                          [disabled]="orderSavingId() !== null"
+                          (click)="updateOrderStatus(order, 'DELIVERED')">
+                    Mark as Delivered
+                  </button>
+                }
+
+                @if (
+                  order.orderStatus === 'PLACED' ||
+                  order.orderStatus === 'CONFIRMED'
+                ) {
+                  <button class="delete-button"
+                          [disabled]="orderSavingId() !== null"
+                          (click)="updateOrderStatus(order, 'CANCELLED')">
+                    Cancel Order
+                  </button>
+                }
+
+                @if (
+                  order.orderStatus === 'DELIVERED' ||
+                  order.orderStatus === 'CANCELLED'
+                ) {
+                  <span class="status-badge">
+                    {{ order.orderStatus }}
+                  </span>
+                }
+
+              </div>
+            </div>
+
+          }
+
+        </div>
+      }
+
+      <!-- INVENTORY ANALYTICS -->
+
+      @if (activeSection() === 'analytics') {
+
+        <div class="analytics-page">
+
+          <div class="analytics-heading">
+            <div>
+              <span class="eyebrow">INVENTORY INTELLIGENCE</span>
+              <h2>Inventory Analytics</h2>
+              <p>Monitor product availability, stock value and restocking needs.</p>
+            </div>
+
+            <button class="primary-button"
+                    [disabled]="productsLoading()"
+                    (click)="loadProducts()">
+              {{ productsLoading() ? 'Refreshing...' : 'Refresh Inventory' }}
+            </button>
+          </div>
+
+          @if (productError()) {
+            <p class="error-message">{{ productError() }}</p>
+          }
+
+          <div class="stats-grid analytics-stats">
+
+            <div class="stat-card">
+              <div class="stat-icon">₹</div>
+              <span>Total Inventory Value</span>
+              <strong>
+                ₹{{ inventoryValue | number:'1.0-2' }}
+              </strong>
+              <small>Current price × units in stock</small>
+            </div>
+
+            <div class="stat-card">
+              <div class="stat-icon">📦</div>
+              <span>Available Stock Units</span>
+              <strong>{{ totalStockUnits | number }}</strong>
+              <small>Across {{ products().length }} products</small>
+            </div>
+
+            <div class="stat-card analytics-warning">
+              <div class="stat-icon">⚠️</div>
+              <span>Low Stock Products</span>
+              <strong>{{ lowStockProducts.length }}</strong>
+              <small>1–{{ lowStockThreshold }} units remaining</small>
+            </div>
+
+            <div class="stat-card analytics-danger">
+              <div class="stat-icon">🚫</div>
+              <span>Out of Stock</span>
+              <strong>{{ outOfStockProducts.length }}</strong>
+              <small>Products with zero units</small>
+            </div>
+
+          </div>
+
+          <div class="analytics-grid">
+
+            <div class="section-card analytics-panel">
+
+              <div class="section-header">
+                <h2>Stock Health</h2>
+                <p>Product availability across your catalog</p>
+              </div>
+
+              <div class="stock-health-score">
+                <strong>{{ stockHealthPercentage }}%</strong>
+                <span>Products with healthy stock</span>
+              </div>
+
+              <div class="health-progress">
+                <div class="health-progress-fill"
+                     [style.width.%]="stockHealthPercentage">
+                </div>
+              </div>
+
+              <div class="health-breakdown">
+
+                <div class="health-item">
+                  <span class="health-dot healthy"></span>
+                  <span>Healthy Stock</span>
+                  <strong>{{ healthyStockProducts.length }}</strong>
+                </div>
+
+                <div class="health-item">
+                  <span class="health-dot low"></span>
+                  <span>Low Stock</span>
+                  <strong>{{ lowStockProducts.length }}</strong>
+                </div>
+
+                <div class="health-item">
+                  <span class="health-dot out"></span>
+                  <span>Out of Stock</span>
+                  <strong>{{ outOfStockProducts.length }}</strong>
+                </div>
+
+              </div>
+
+            </div>
+
+            <div class="section-card analytics-panel">
+
+              <div class="section-header">
+                <h2>Category Breakdown</h2>
+                <p>Inventory value by product category</p>
+              </div>
+
+              @if (categoryAnalytics.length === 0) {
+                <div class="empty-state">
+                  No inventory data available.
+                </div>
+              } @else {
+
+                <div class="category-chart">
+
+                  @for (category of categoryAnalytics; track category.category) {
+
+                    <div class="category-chart-row">
+
+                      <div class="category-chart-label">
+                        <strong>{{ category.category }}</strong>
+                        <span>
+                          ₹{{ category.value | number:'1.0-2' }}
+                        </span>
+                      </div>
+
+                      <div class="category-bar-track">
+                        <div class="category-bar-fill"
+                             [style.width.%]="category.percentage">
+                        </div>
+                      </div>
+
+                      <small>
+                        {{ category.products }} products ·
+                        {{ category.units }} units
+                      </small>
+
+                    </div>
+
+                  }
+
+                </div>
+
+              }
+
+            </div>
+
+          </div>
+
+          <div class="section-card analytics-inventory">
+
+            <div class="products-heading">
+              <div>
+                <span class="eyebrow">STOCK MONITORING</span>
+                <h2>Inventory Overview</h2>
+                <p>Find products that need attention.</p>
+              </div>
+            </div>
+
+            <div class="product-toolbar">
+
+              <input type="search"
+                     placeholder="Search product, brand or category..."
+                     [(ngModel)]="analyticsSearch" />
+
+              <select [(ngModel)]="analyticsFilter">
+                <option value="all">All Products</option>
+                <option value="healthy">Healthy Stock</option>
+                <option value="low">Low Stock</option>
+                <option value="out">Out of Stock</option>
+              </select>
+
+            </div>
+
+            @if (productsLoading()) {
+
+              <div class="empty-state">
+                Loading inventory...
+              </div>
+
+            } @else if (filteredInventory.length === 0) {
+
+              <div class="empty-state">
+                No matching inventory products found.
+              </div>
+
+            } @else {
+
+              <div class="table-wrapper">
+
+                <table class="products-table">
+                  <thead>
+                    <tr>
+                      <th>Product</th>
+                      <th>Category</th>
+                      <th>Price</th>
+                      <th>Available Units</th>
+                      <th>Inventory Value</th>
+                      <th>Stock Status</th>
+                      <th>Action</th>
+                    </tr>
+                  </thead>
+
+                  <tbody>
+                    <tr *ngFor="let product of filteredInventory; trackBy: trackProduct">
+
+                      <td>
+                        <div class="product-identity">
+                          @if (product.imageUrl) {
+                            <img [src]="product.imageUrl"
+                                 [alt]="product.name"
+                                 class="product-thumbnail" />
+                          } @else {
+                            <div class="product-placeholder">📦</div>
+                          }
+
+                          <div>
+                            <strong>{{ product.name }}</strong>
+                            <small>{{ product.brand }}</small>
+                          </div>
+                        </div>
+                      </td>
+
+                      <td>{{ product.category || '—' }}</td>
+
+                      <td>
+                        ₹{{ product.price | number:'1.0-2' }}
+                      </td>
+
+                      <td>{{ product.stock }}</td>
+
+                      <td>
+                        ₹{{ product.price * product.stock | number:'1.0-2' }}
+                      </td>
+
+                      <td>
+                        <span class="stock-pill"
+                              [class.out-of-stock]="product.stock === 0"
+                              [class.low-stock]="product.stock > 0 && product.stock <= lowStockThreshold">
+                          {{ getStockLabel(product.stock) }}
+                        </span>
+                      </td>
+
+                      <td>
+                        <button class="edit-button"
+                                (click)="openProducts(); editProduct(product)">
+                          Edit Stock
+                        </button>
+                      </td>
+
+                    </tr>
+                  </tbody>
+                </table>
+
+              </div>
+
+            }
+
+          </div>
+
+        </div>
+
+      }
+
+    </div>
+
+  }
+
+</section>

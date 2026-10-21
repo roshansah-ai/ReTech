@@ -1,0 +1,259 @@
+
+<section class="compare-page">
+
+  <div class="compare-container">
+
+    <div class="page-heading">
+      <div>
+        <span class="eyebrow">SMART SHOPPING</span>
+        <h1>Compare Products</h1>
+        <p>
+          Compare up to 3 refurbished devices side by side.
+        </p>
+      </div>
+
+      <a routerLink="/" fragment="products" class="shop-link">
+        ← Browse Products
+      </a>
+    </div>
+
+    <div *ngIf="message()" class="message" role="status">
+      {{ message() }}
+    </div>
+
+    <div *ngIf="products().length === 0" class="empty-state">
+      <div class="empty-icon">⇄</div>
+      <h2>No products selected</h2>
+      <p>
+        Select products from the store to compare their
+        features, prices and warranties.
+      </p>
+
+      <a
+        routerLink="/"
+        fragment="products"
+        class="primary-link"
+      >
+        Explore Products
+      </a>
+    </div>
+
+    <ng-container *ngIf="products().length > 0">
+
+      <div class="comparison-toolbar">
+        <span>
+          {{ compareCount() }} / 3 products selected
+        </span>
+
+        <button
+          type="button"
+          (click)="clearComparison()"
+        >
+          Clear All
+        </button>
+      </div>
+
+      <div class="comparison-scroll">
+
+        <table class="comparison-table">
+
+          <thead>
+            <tr>
+              <th class="feature-column">Features</th>
+
+              <th *ngFor="let product of products()">
+
+                <div class="product-heading">
+
+                  <button
+                    type="button"
+                    class="remove-button"
+                    [attr.aria-label]="'Remove ' + product.name"
+                    (click)="removeProduct(product.id)"
+                  >
+                    ✕
+                  </button>
+
+                  <div class="product-image">
+                    <img
+                      *ngIf="product.imageUrl"
+                      [src]="product.imageUrl"
+                      [alt]="product.name"
+                      (error)="$any($event.target).style.display='none'"
+                    >
+                    <span>ReTech</span>
+                  </div>
+
+                  <a
+                    [routerLink]="['/products', product.id]"
+                    class="product-title"
+                  >
+                    {{ product.name }}
+                  </a>
+
+                  <div class="product-price">
+                    {{
+                      product.price |
+                      currency:'INR':'symbol':'1.0-0'
+                    }}
+                  </div>
+
+                </div>
+
+              </th>
+            </tr>
+          </thead>
+
+          <tbody>
+
+            <tr>
+              <th scope="row">Brand</th>
+              <td *ngFor="let product of products()">
+                {{ product.brand }}
+              </td>
+            </tr>
+
+            <tr>
+              <th scope="row">Category</th>
+              <td *ngFor="let product of products()">
+                {{ product.category }}
+              </td>
+            </tr>
+
+            <tr>
+              <th scope="row">Price</th>
+              <td *ngFor="let product of products()">
+                <strong
+                  [class.best-value]="
+                    product.price === getLowestPrice()
+                  "
+                >
+                  {{
+                    product.price |
+                    currency:'INR':'symbol':'1.0-0'
+                  }}
+                </strong>
+
+                <span
+                  *ngIf="
+                    products().length > 1 &&
+                    product.price === getLowestPrice()
+                  "
+                  class="best-label"
+                >
+                  Lowest Price
+                </span>
+              </td>
+            </tr>
+
+            <tr>
+              <th scope="row">Condition Grade</th>
+              <td *ngFor="let product of products()">
+                <span
+                  class="grade-badge"
+                  [ngClass]="
+                    'grade-' + product.conditionGrade.toLowerCase()
+                  "
+                >
+                  Grade {{ product.conditionGrade }}
+                </span>
+
+                <p>
+                  {{ getGradeLabel(product.conditionGrade) }}
+                </p>
+              </td>
+            </tr>
+
+            <tr>
+              <th scope="row">Warranty</th>
+              <td *ngFor="let product of products()">
+                <strong>
+                  {{ product.warrantyMonths }} Months
+                </strong>
+
+                <span
+                  *ngIf="
+                    products().length > 1 &&
+                    product.warrantyMonths === getLongestWarranty()
+                  "
+                  class="best-label"
+                >
+                  Longest Warranty
+                </span>
+              </td>
+            </tr>
+
+            <tr>
+              <th scope="row">Stock Availability</th>
+              <td *ngFor="let product of products()">
+                <span
+                  [class.in-stock]="product.stock > 0"
+                  [class.out-of-stock]="product.stock <= 0"
+                >
+                  {{
+                    product.stock > 0
+                      ? product.stock + ' Available'
+                      : 'Out of Stock'
+                  }}
+                </span>
+              </td>
+            </tr>
+
+            <tr>
+              <th scope="row">Specifications</th>
+              <td
+                *ngFor="let product of products()"
+                class="description-cell"
+              >
+                {{ product.description }}
+              </td>
+            </tr>
+
+            <tr>
+              <th scope="row">Actions</th>
+              <td *ngFor="let product of products()">
+
+                <div class="action-buttons">
+
+                  <button
+                    type="button"
+                    class="cart-button"
+                    [disabled]="product.stock <= 0"
+                    (click)="addToCart(product)"
+                  >
+                    Add to Cart
+                  </button>
+
+                  <button
+                    type="button"
+                    class="wishlist-button"
+                    (click)="toggleWishlist(product)"
+                  >
+                    {{
+                      wishlistService.isInWishlist(product.id)
+                        ? '♥ Saved'
+                        : '♡ Wishlist'
+                    }}
+                  </button>
+
+                </div>
+
+              </td>
+            </tr>
+
+          </tbody>
+
+        </table>
+
+      </div>
+
+      <p class="comparison-note">
+        Prices and stock shown are from the selected product
+        data. Final availability will be verified at checkout.
+      </p>
+
+    </ng-container>
+
+  </div>
+
+</section>

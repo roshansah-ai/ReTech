@@ -1,0 +1,131 @@
+
+<section class="wishlist-page">
+
+  <div class="wishlist-container">
+
+    <div class="page-header">
+      <div>
+        <span class="eyebrow">YOUR SAVED PRODUCTS</span>
+        <h1>My Wishlist</h1>
+        <p>
+          {{ wishlistCount() }}
+          {{ wishlistCount() === 1 ? 'product' : 'products' }}
+          saved
+        </p>
+      </div>
+
+      <a routerLink="/" fragment="products" class="shop-link">
+        ← Continue Shopping
+      </a>
+    </div>
+
+    <div *ngIf="message()" class="message" role="status">
+      {{ message() }}
+    </div>
+
+    <!-- EMPTY WISHLIST -->
+    <div *ngIf="products().length === 0" class="empty-state">
+      <div class="empty-icon">♡</div>
+      <h2>Your wishlist is empty</h2>
+      <p>Save products you like and find them here later.</p>
+
+      <a routerLink="/" fragment="products" class="primary-link">
+        Explore Products
+      </a>
+    </div>
+
+    <!-- SAVED PRODUCTS -->
+    <ng-container *ngIf="products().length > 0">
+
+      <div class="wishlist-toolbar">
+        <h2>Saved Items</h2>
+
+        <button type="button" (click)="clearWishlist()">
+          Clear Wishlist
+        </button>
+      </div>
+
+      <div class="wishlist-grid">
+
+        <article
+          class="wishlist-card"
+          *ngFor="let product of products()"
+        >
+
+          <div class="image-area">
+            <span class="grade-badge">
+              Grade {{ product.conditionGrade }}
+            </span>
+
+            <img
+              *ngIf="product.imageUrl"
+              [src]="product.imageUrl"
+              [alt]="product.name"
+              loading="lazy"
+              (error)="$any($event.target).style.display='none'"
+            >
+
+            <span class="image-fallback">ReTech</span>
+          </div>
+
+          <div class="card-content">
+
+            <span class="category">
+              {{ product.category }}
+            </span>
+
+            <a
+              [routerLink]="['/products', product.id]"
+              class="product-name"
+            >
+              {{ product.name }}
+            </a>
+
+            <p class="brand">{{ product.brand }}</p>
+
+            <div class="product-meta">
+              <span>
+                {{ product.warrantyMonths }} Months Warranty
+              </span>
+
+              <span [class.out-of-stock]="product.stock <= 0">
+                {{ product.stock > 0 ? 'In Stock' : 'Out of Stock' }}
+              </span>
+            </div>
+
+            <div class="price">
+              {{ product.price | currency:'INR':'symbol':'1.0-0' }}
+            </div>
+
+            <div class="card-actions">
+
+              <button
+                type="button"
+                class="cart-button"
+                [disabled]="product.stock <= 0"
+                (click)="addToCart(product)"
+              >
+                Add to Cart
+              </button>
+
+              <button
+                type="button"
+                class="remove-button"
+                (click)="removeProduct(product.id)"
+              >
+                Remove
+              </button>
+
+            </div>
+
+          </div>
+
+        </article>
+
+      </div>
+
+    </ng-container>
+
+  </div>
+
+</section>

@@ -1,0 +1,258 @@
+
+<section class="checkout-page">
+  <div class="checkout-container">
+
+    <a routerLink="/cart" class="back-link"
+       *ngIf="!completedOrder()">
+      ← Back to Cart
+    </a>
+
+    <!-- SUCCESSFUL ORDER -->
+    <div *ngIf="completedOrder() as order" class="confirmation">
+      <div class="success-icon">✓</div>
+
+      <span class="eyebrow">ORDER CONFIRMED</span>
+      <h1>Thank you for your order!</h1>
+
+      <p>
+        Your ReTech order has been placed successfully.
+      </p>
+
+      <div class="confirmation-details">
+        <div>
+          <span>Order Number</span>
+          <strong>#RT-{{ order.orderId }}</strong>
+        </div>
+
+        <div>
+          <span>Order Status</span>
+          <strong>{{ order.orderStatus }}</strong>
+        </div>
+
+        <div>
+          <span>Payment Status</span>
+          <strong>{{ order.paymentStatus }}</strong>
+        </div>
+
+        <div>
+          <span>Total Paid / Payable</span>
+          <strong>
+            {{ order.totalAmount | currency:'INR':'symbol':'1.0-0' }}
+          </strong>
+        </div>
+      </div>
+
+      <p class="payment-note" *ngIf="order.paymentMethod === 'SIMULATED_ONLINE'">
+        This was a simulated payment. No real money was charged.
+      </p>
+
+      <p class="payment-note" *ngIf="order.paymentMethod === 'COD'">
+        Payment will be collected on delivery in this demo workflow.
+      </p>
+
+      <a routerLink="/" class="primary-button">
+        Continue Shopping →
+      </a>
+    </div>
+
+    <!-- CHECKOUT FORM -->
+    <ng-container *ngIf="!completedOrder()">
+
+      <div class="page-heading">
+        <span class="eyebrow">SECURE CHECKOUT DEMO</span>
+        <h1>Complete Your Order</h1>
+        <p>Enter your delivery details and review your items.</p>
+      </div>
+
+      <div *ngIf="items().length === 0" class="empty-state">
+        <h2>Your cart is empty</h2>
+        <p>Add products before proceeding to checkout.</p>
+        <a routerLink="/" class="primary-button">
+          Explore Products
+        </a>
+      </div>
+
+      <form
+        *ngIf="items().length > 0"
+        #checkoutForm="ngForm"
+        (ngSubmit)="placeOrder(checkoutForm)"
+        class="checkout-layout"
+      >
+
+        <div class="checkout-main">
+
+          <div class="checkout-card">
+            <h2>Customer & Delivery Details</h2>
+
+            <div class="field">
+              <label for="customerName">Full Name</label>
+              <input
+                id="customerName"
+                name="customerName"
+                type="text"
+                [(ngModel)]="customerName"
+                #nameField="ngModel"
+                required
+                maxlength="100"
+                autocomplete="name"
+                placeholder="Enter your full name"
+              >
+              <small *ngIf="nameField.invalid && nameField.touched">
+                Full name is required.
+              </small>
+            </div>
+
+            <div class="field">
+              <label for="email">Email Address</label>
+              <input
+                id="email"
+                name="email"
+                type="email"
+                [(ngModel)]="email"
+                #emailField="ngModel"
+                required
+                email
+                autocomplete="email"
+                placeholder="example@email.com"
+              >
+              <small *ngIf="emailField.invalid && emailField.touched">
+                Enter a valid email address.
+              </small>
+            </div>
+
+            <div class="field">
+              <label for="phone">Phone Number</label>
+              <input
+                id="phone"
+                name="phone"
+                type="tel"
+                [(ngModel)]="phone"
+                #phoneField="ngModel"
+                required
+                pattern="[0-9+() \-]{7,20}"
+                autocomplete="tel"
+                placeholder="Enter your phone number"
+              >
+              <small *ngIf="phoneField.invalid && phoneField.touched">
+                Enter a valid phone number.
+              </small>
+            </div>
+
+            <div class="field">
+              <label for="deliveryAddress">Delivery Address</label>
+              <textarea
+                id="deliveryAddress"
+                name="deliveryAddress"
+                [(ngModel)]="deliveryAddress"
+                #addressField="ngModel"
+                required
+                maxlength="1000"
+                rows="4"
+                autocomplete="street-address"
+                placeholder="House number, street, area, city, state and PIN code"
+              ></textarea>
+              <small *ngIf="addressField.invalid && addressField.touched">
+                Delivery address is required.
+              </small>
+            </div>
+          </div>
+
+          <div class="checkout-card">
+            <h2>Payment Method</h2>
+
+            <label class="payment-option">
+              <input
+                type="radio"
+                name="paymentMethod"
+                [(ngModel)]="paymentMethod"
+                value="COD"
+              >
+              <span>
+                <strong>Cash on Delivery</strong>
+                <small>Pay when your order arrives (demo).</small>
+              </span>
+            </label>
+
+            <label class="payment-option">
+              <input
+                type="radio"
+                name="paymentMethod"
+                [(ngModel)]="paymentMethod"
+                value="SIMULATED_ONLINE"
+              >
+              <span>
+                <strong>Simulated Online Payment</strong>
+                <small>No actual payment or banking details required.</small>
+              </span>
+            </label>
+          </div>
+
+        </div>
+
+        <!-- ORDER SUMMARY -->
+        <aside class="checkout-card order-summary">
+          <h2>Order Summary</h2>
+
+          <div class="summary-item" *ngFor="let item of items()">
+            <div>
+              <strong>{{ item.product.name }}</strong>
+              <span>Quantity: {{ item.quantity }}</span>
+            </div>
+
+            <strong>
+              {{
+                item.product.price * item.quantity
+                  | currency:'INR':'symbol':'1.0-0'
+              }}
+            </strong>
+          </div>
+
+          <div class="summary-row">
+            <span>Items ({{ cartCount() }})</span>
+            <strong>
+              {{ subtotal() | currency:'INR':'symbol':'1.0-0' }}
+            </strong>
+          </div>
+
+          <div class="summary-row">
+            <span>Delivery</span>
+            <span>Included</span>
+          </div>
+
+          <div class="summary-total">
+            <span>Estimated Total</span>
+            <strong>
+              {{ subtotal() | currency:'INR':'symbol':'1.0-0' }}
+            </strong>
+          </div>
+
+          <p class="summary-note">
+            Final product prices and stock are verified by the server.
+          </p>
+
+          <div class="error-message" *ngIf="error()" role="alert">
+            {{ error() }}
+          </div>
+
+          <button
+            type="submit"
+            class="place-order-button"
+            [disabled]="submitting() || checkoutForm.invalid"
+          >
+            {{
+              submitting()
+                ? 'Placing Order...'
+                : 'Place Order →'
+            }}
+          </button>
+
+          <p class="demo-note">
+            ReTech college project demo. Online payments are simulated.
+          </p>
+        </aside>
+
+      </form>
+
+    </ng-container>
+  </div>
+</section>

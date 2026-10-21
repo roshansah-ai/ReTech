@@ -1,0 +1,290 @@
+
+<div class="details-page">
+
+  <div class="container">
+
+    <!-- BREADCRUMB -->
+    <div class="breadcrumb">
+      <a routerLink="/">Home</a>
+      <span>/</span>
+      <a routerLink="/" fragment="products">Products</a>
+      <span>/</span>
+      <span>{{ product()?.name || 'Product Details' }}</span>
+    </div>
+
+    <!-- LOADING -->
+    <div *ngIf="loading()" class="state-message">
+      Loading product details...
+    </div>
+
+    <!-- ERROR -->
+    <div *ngIf="error()" class="state-message error">
+      <h2>Unable to load product</h2>
+      <p>{{ error() }}</p>
+      <a routerLink="/" class="back-button">
+        Back to Products
+      </a>
+    </div>
+
+    <!-- PRODUCT DETAILS -->
+    <ng-container *ngIf="product() as p">
+
+      <div class="product-layout">
+
+        <!-- PRODUCT IMAGE -->
+        <div class="image-panel">
+
+          <span class="grade-tag">
+            Grade {{ p.conditionGrade }}
+          </span>
+
+          <img
+            *ngIf="p.imageUrl && !imageFailed()"
+            [src]="p.imageUrl"
+            [alt]="p.name"
+            (error)="imageFailed.set(true)"
+          >
+
+          <div
+            *ngIf="!p.imageUrl || imageFailed()"
+            class="image-placeholder"
+          >
+            <span class="placeholder-icon">R</span>
+            <p>ReTech Refurbished Electronics</p>
+          </div>
+
+        </div>
+
+        <!-- PRODUCT CONTENT -->
+        <div class="product-content">
+
+          <span class="category">
+            {{ p.category }}
+          </span>
+
+          <h1>{{ p.name }}</h1>
+
+          <p class="brand">
+            Brand: <strong>{{ p.brand }}</strong>
+          </p>
+
+          <!-- CONDITION GRADE -->
+          <div class="grade-summary">
+
+            <span class="grade-circle">
+              {{ p.conditionGrade }}
+            </span>
+
+            <div>
+              <strong>
+                {{ getGradeLabel(p.conditionGrade) }} Condition
+              </strong>
+
+              <p>
+                {{ getGradeDescription(p.conditionGrade) }}
+              </p>
+            </div>
+
+          </div>
+
+          <!-- PRICE -->
+          <div class="price-box">
+
+            <span class="price-label">
+              ReTech Price
+            </span>
+
+            <div class="price">
+              {{
+                p.price |
+                currency:'INR':'symbol':'1.0-0'
+              }}
+            </div>
+
+            <p>
+              Quality-checked refurbished electronics
+            </p>
+
+          </div>
+
+          <!-- AVAILABILITY -->
+          <div class="availability">
+
+            <span [class.unavailable]="p.stock <= 0">
+              {{
+                p.stock > 0
+                  ? '● In Stock'
+                  : '● Out of Stock'
+              }}
+            </span>
+
+            <small *ngIf="p.stock > 0">
+              {{ p.stock }} units available
+            </small>
+
+          </div>
+
+          <!-- WARRANTY -->
+          <div class="warranty-box">
+
+            <span class="warranty-icon">✓</span>
+
+            <div>
+              <strong>
+                {{ p.warrantyMonths }} Months Warranty
+              </strong>
+
+              <p>
+                Warranty duration included with this product.
+              </p>
+            </div>
+
+          </div>
+
+          <!-- ADD TO CART -->
+          <button
+            type="button"
+            class="cart-button"
+            [disabled]="p.stock <= 0"
+            (click)="addToCart()"
+          >
+            {{
+              p.stock > 0
+                ? '🛒 Add to Cart'
+                : 'Out of Stock'
+            }}
+          </button>
+
+          <!-- WISHLIST -->
+          <button
+            type="button"
+            class="wishlist-action"
+            (click)="toggleWishlist()"
+          >
+            {{
+              wishlistService.isInWishlist(p.id)
+                ? '♥ Remove from Wishlist'
+                : '♡ Add to Wishlist'
+            }}
+          </button>
+
+          <!-- PRODUCT COMPARISON -->
+          <button
+            type="button"
+            class="compare-action"
+            (click)="toggleCompare()"
+          >
+            {{
+              compareService.isSelected(p.id)
+                ? '✓ Remove from Comparison'
+                : '⇄ Add to Compare'
+            }}
+          </button>
+
+          <!-- SUCCESS / ERROR MESSAGE -->
+          <p
+            *ngIf="message()"
+            class="cart-note"
+            role="status"
+          >
+            {{ message() }}
+          </p>
+
+          <!-- NAVIGATION LINKS -->
+          <a
+            routerLink="/cart"
+            class="back-button"
+            style="display: block; text-align: center;"
+          >
+            View Shopping Cart →
+          </a>
+
+          <a
+            routerLink="/wishlist"
+            class="back-button"
+            style="display: block; text-align: center;"
+          >
+            View Wishlist →
+          </a>
+
+          <a
+            routerLink="/compare"
+            class="compare-link"
+          >
+            View Product Comparison →
+          </a>
+
+        </div>
+
+      </div>
+
+      <!-- PRODUCT INFORMATION -->
+      <section class="information-section">
+
+        <h2>Product Information</h2>
+
+        <div class="info-grid">
+
+          <!-- DESCRIPTION -->
+          <div class="info-card">
+
+            <h3>Description & Specifications</h3>
+
+            <p>{{ p.description }}</p>
+
+          </div>
+
+          <!-- QUALITY GRADING -->
+          <div class="info-card">
+
+            <h3>Condition & Quality Grading</h3>
+
+            <div class="grade-row">
+              <span>Condition Grade</span>
+              <strong>
+                Grade {{ p.conditionGrade }}
+              </strong>
+            </div>
+
+            <div class="grade-row">
+              <span>Condition</span>
+              <strong>
+                {{ getGradeLabel(p.conditionGrade) }}
+              </strong>
+            </div>
+
+            <p>
+              {{ getGradeDescription(p.conditionGrade) }}
+            </p>
+
+          </div>
+
+          <!-- WARRANTY INFORMATION -->
+          <div class="info-card">
+
+            <h3>Warranty Information</h3>
+
+            <div class="grade-row">
+              <span>Warranty Duration</span>
+
+              <strong>
+                {{ p.warrantyMonths }} Months
+              </strong>
+            </div>
+
+            <p>
+              Detailed warranty terms and claims management
+              will be available in the warranty module.
+            </p>
+
+          </div>
+
+        </div>
+
+      </section>
+
+    </ng-container>
+
+  </div>
+
+</div>

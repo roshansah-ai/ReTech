@@ -1,0 +1,169 @@
+
+<header class="navbar">
+
+  <div class="navbar-container">
+
+    <a routerLink="/" class="brand">
+      <span class="brand-icon">R</span>
+
+      <span class="brand-text">
+        Re<span>Tech</span>
+      </span>
+    </a>
+
+    <nav class="nav-links">
+
+      <a
+        routerLink="/"
+        routerLinkActive="active"
+        [routerLinkActiveOptions]="{ exact: true }"
+      >
+        Home
+      </a>
+
+      <a
+        routerLink="/"
+        fragment="products"
+      >
+        Shop
+      </a>
+
+      <a
+        routerLink="/compare"
+        routerLinkActive="active"
+      >
+        Compare
+
+        @if (compareCount() > 0) {
+          <span class="nav-count">
+            {{ compareCount() }}
+          </span>
+        }
+      </a>
+
+      <a
+        routerLink="/wishlist"
+        routerLinkActive="active"
+      >
+        Wishlist
+
+        @if (wishlistCount() > 0) {
+          <span class="nav-count">
+            {{ wishlistCount() }}
+          </span>
+        }
+      </a>
+
+      <a
+        routerLink="/my-orders"
+        routerLinkActive="active"
+      >
+        My Orders
+      </a>
+
+      <a
+        routerLink="/cart"
+        routerLinkActive="active"
+        class="cart-link"
+      >
+        Cart
+
+        <span class="nav-count">
+          {{ cartCount() }}
+        </span>
+      </a>
+
+      <!-- ADMIN PORTAL -->
+
+      <a
+        routerLink="/admin"
+        routerLinkActive="active"
+        style="
+          color: #0f766e;
+          font-weight: 700;
+        "
+      >
+        Admin Portal
+      </a>
+
+      <!-- CUSTOMER LOGIN / LOGOUT -->
+
+      @if (!checkingSession) {
+
+        @if (currentCustomer(); as customer) {
+
+          <span
+            class="customer-name"
+            style="
+              font-weight: 700;
+              color: #0f766e;
+              font-size: 13px;
+            "
+          >
+            Hi, {{ customer.name }}
+          </span>
+
+          <button
+            type="button"
+            (click)="logout()"
+            [disabled]="loggingOut"
+            style="
+              background: #0f766e;
+              color: white;
+              border: none;
+              padding: 9px 14px;
+              border-radius: 9px;
+              font-weight: 700;
+              cursor: pointer;
+            "
+          >
+            {{ loggingOut ? 'Logging out...' : 'Logout' }}
+          </button>
+
+        } @else {
+
+          <a
+            routerLink="/login"
+            routerLinkActive="active"
+          >
+            Login
+          </a>
+
+          <a
+            routerLink="/register"
+            routerLinkActive="active"
+            style="
+              background: #0f766e;
+              color: white;
+              padding: 9px 14px;
+              border-radius: 9px;
+              font-weight: 700;
+              text-decoration: none;
+            "
+          >
+            Register
+          </a>
+
+        }
+
+      }
+
+    </nav>
+
+  </div>
+
+  @if (logoutError) {
+    <p
+      role="alert"
+      style="
+        text-align: center;
+        color: #b91c1c;
+        font-size: 13px;
+        margin: 5px;
+      "
+    >
+      {{ logoutError }}
+    </p>
+  }
+
+</header>

@@ -1,0 +1,220 @@
+
+<section class="cart-page">
+
+  <div class="cart-container">
+
+    <div class="page-heading">
+      <div>
+        <span class="eyebrow">YOUR SHOPPING BAG</span>
+        <h1>Shopping Cart</h1>
+        <p>
+          {{ cartCount() }}
+          {{ cartCount() === 1 ? 'item' : 'items' }}
+          in your cart
+        </p>
+      </div>
+
+      <a routerLink="/" fragment="products" class="continue-link">
+        ← Continue Shopping
+      </a>
+    </div>
+
+    <!-- EMPTY CART -->
+    <div *ngIf="items().length === 0" class="empty-cart">
+      <div class="empty-icon">🛒</div>
+
+      <h2>Your cart is empty</h2>
+
+      <p>
+        Explore quality-checked refurbished electronics
+        and add your favourite products.
+      </p>
+
+      <a routerLink="/" fragment="products" class="shop-button">
+        Explore Products
+      </a>
+    </div>
+
+    <!-- CART CONTENT -->
+    <div *ngIf="items().length > 0" class="cart-layout">
+
+      <!-- CART ITEMS -->
+      <div class="cart-items">
+
+        <div class="items-header">
+          <h2>Cart Items</h2>
+
+          <button type="button" (click)="clearCart()">
+            Clear Cart
+          </button>
+        </div>
+
+        <article
+          class="cart-item"
+          *ngFor="let item of items(); trackBy: trackItem"
+        >
+
+          <!-- PRODUCT IMAGE -->
+          <a
+            class="item-image"
+            [routerLink]="['/products', item.product.id]"
+          >
+            <img
+              *ngIf="item.product.imageUrl"
+              [src]="item.product.imageUrl"
+              [alt]="item.product.name"
+              (error)="$any($event.target).style.display='none'"
+            >
+
+            <span class="image-fallback">ReTech</span>
+          </a>
+
+          <!-- PRODUCT DETAILS -->
+          <div class="item-details">
+
+            <span class="brand">
+              {{ item.product.brand }}
+            </span>
+
+            <a
+              class="item-name"
+              [routerLink]="['/products', item.product.id]"
+            >
+              {{ item.product.name }}
+            </a>
+
+            <div class="item-tags">
+              <span>
+                Grade {{ item.product.conditionGrade }}
+              </span>
+
+              <span>
+                {{ item.product.warrantyMonths }}
+                Months Warranty
+              </span>
+            </div>
+
+            <p class="unit-price">
+              {{
+                item.product.price |
+                currency:'INR':'symbol':'1.0-0'
+              }}
+              each
+            </p>
+
+            <!-- QUANTITY AND REMOVE -->
+            <div class="item-actions">
+
+              <div class="quantity-control">
+
+                <button
+                  type="button"
+                  aria-label="Decrease quantity"
+                  [disabled]="item.quantity <= 1"
+                  (click)="decreaseQuantity(item.product.id)"
+                >
+                  −
+                </button>
+
+                <span>{{ item.quantity }}</span>
+
+                <button
+                  type="button"
+                  aria-label="Increase quantity"
+                  [disabled]="item.quantity >= item.product.stock"
+                  (click)="increaseQuantity(item.product.id)"
+                >
+                  +
+                </button>
+
+              </div>
+
+              <button
+                type="button"
+                class="remove-button"
+                (click)="removeItem(item.product.id)"
+              >
+                Remove
+              </button>
+
+            </div>
+
+          </div>
+
+          <!-- ITEM TOTAL -->
+          <div class="item-total">
+            {{
+              item.product.price * item.quantity |
+              currency:'INR':'symbol':'1.0-0'
+            }}
+          </div>
+
+        </article>
+
+      </div>
+
+      <!-- ORDER SUMMARY -->
+      <aside class="order-summary">
+
+        <h2>Order Summary</h2>
+
+        <div class="summary-row">
+          <span>
+            Subtotal ({{ cartCount() }} items)
+          </span>
+
+          <strong>
+            {{
+              subtotal() |
+              currency:'INR':'symbol':'1.0-0'
+            }}
+          </strong>
+        </div>
+
+        <div class="summary-row">
+          <span>Delivery</span>
+          <span>Included</span>
+        </div>
+
+        <div class="summary-row">
+          <span>Taxes</span>
+          <span>No additional charges in demo</span>
+        </div>
+
+        <div class="summary-total">
+          <span>Cart Subtotal</span>
+
+          <strong>
+            {{
+              subtotal() |
+              currency:'INR':'symbol':'1.0-0'
+            }}
+          </strong>
+        </div>
+
+        <!-- WORKING CHECKOUT LINK -->
+        <a
+          routerLink="/checkout"
+          class="checkout-button"
+        >
+          Proceed to Checkout →
+        </a>
+
+        <p class="checkout-note">
+          Enter your delivery details and choose a payment
+          method on the next page. Online payment is simulated.
+        </p>
+
+        <div class="trust-info">
+          <p>✓ Transparent Condition Grading</p>
+          <p>✓ Warranty Information Included</p>
+          <p>✓ Quality-Checked Refurbished Products</p>
+        </div>
+
+      </aside>
+
+    </div>
+
+  </div>
+
+</section>

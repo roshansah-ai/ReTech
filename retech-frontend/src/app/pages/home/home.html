@@ -1,0 +1,295 @@
+
+<!-- HERO SECTION -->
+<section class="hero">
+  <div class="hero-content">
+
+    <span class="eyebrow">
+      CERTIFIED REFURBISHED ELECTRONICS
+    </span>
+
+    <h1>
+      Premium Tech.<br>
+      <span>Smarter Prices.</span>
+    </h1>
+
+    <p>
+      Discover quality-checked refurbished laptops,
+      smartphones and electronics with transparent
+      condition grading and warranty coverage.
+    </p>
+
+    <a href="#products" class="hero-button">
+      Explore Products →
+    </a>
+
+  </div>
+
+  <div class="hero-visual">
+    <div class="hero-symbol">R</div>
+    <span>RETHINK TECH. CHOOSE RETECH.</span>
+  </div>
+</section>
+
+<!-- BENEFITS SECTION -->
+<section class="benefits">
+  <div>✓ Quality-Checked Devices</div>
+  <div>✓ Transparent Condition Grades</div>
+  <div>✓ Warranty Coverage</div>
+  <div>✓ Affordable Technology</div>
+</section>
+
+<!-- SHOP SECTION -->
+<section class="shop-section" id="products">
+
+  <!-- SECTION HEADING -->
+  <div class="section-heading">
+
+    <div>
+      <span class="eyebrow dark">
+        THE RETECH COLLECTION
+      </span>
+
+      <h2>Explore Refurbished Tech</h2>
+
+      <p>Find your next device at a smarter price.</p>
+    </div>
+
+    <span class="product-count">
+      {{ filteredProducts().length }} products
+    </span>
+
+  </div>
+
+  <!-- SEARCH AND SORT -->
+  <div class="filters">
+
+    <input
+      type="text"
+      placeholder="Search laptops, phones, brands..."
+      [(ngModel)]="searchTerm"
+      (ngModelChange)="applyFilters()"
+    >
+
+    <select
+      [(ngModel)]="sortBy"
+      (change)="applyFilters()"
+    >
+      <option value="default">Default sorting</option>
+      <option value="low">Price: Low to High</option>
+      <option value="high">Price: High to Low</option>
+    </select>
+
+  </div>
+
+  <!-- CATEGORY FILTERS -->
+  <div class="categories">
+
+    <button
+      type="button"
+      *ngFor="let category of categories"
+      (click)="selectCategory(category)"
+      [class.active]="selectedCategory === category"
+    >
+      {{ category }}
+    </button>
+
+  </div>
+
+  <!-- COMPARISON BAR -->
+  <div
+    class="compare-toolbar"
+    *ngIf="compareCount() > 0"
+  >
+
+    <div>
+      <strong>
+        ⇄ {{ compareCount() }} / 3 Products Selected
+      </strong>
+
+      <p>Compare prices, condition grades and warranties.</p>
+    </div>
+
+    <div class="compare-toolbar-actions">
+
+      <button
+        type="button"
+        class="clear-compare-button"
+        (click)="clearComparison()"
+      >
+        Clear
+      </button>
+
+      <a
+        routerLink="/compare"
+        class="view-compare-button"
+      >
+        View Comparison →
+      </a>
+
+    </div>
+
+  </div>
+
+  <!-- COMPARISON MESSAGE -->
+  <div
+    *ngIf="compareMessage()"
+    class="compare-message"
+    role="status"
+  >
+    {{ compareMessage() }}
+  </div>
+
+  <!-- LOADING STATE -->
+  <div *ngIf="loading()" class="message">
+    Loading products...
+  </div>
+
+  <!-- ERROR STATE -->
+  <div *ngIf="error()" class="message error">
+
+    {{ error() }}
+
+    <div style="margin-top: 15px;">
+      <button type="button" (click)="loadProducts()">
+        Try Again
+      </button>
+    </div>
+
+  </div>
+
+  <!-- EMPTY STATE -->
+  <div
+    *ngIf="!loading() && !error() && filteredProducts().length === 0"
+    class="message"
+  >
+    No products found.
+  </div>
+
+  <!-- PRODUCT GRID -->
+  <div
+    class="product-grid"
+    *ngIf="!loading() && !error()"
+  >
+
+    <!-- PRODUCT CARD -->
+    <div
+      class="product-card"
+      *ngFor="
+        let product of filteredProducts();
+        trackBy: trackProduct
+      "
+    >
+
+      <!-- PRODUCT IMAGE -->
+      <a
+        class="product-image"
+        [routerLink]="['/products', product.id]"
+      >
+
+        <span class="grade-badge">
+          Grade {{ product.conditionGrade }}
+        </span>
+
+        <img
+          *ngIf="product.imageUrl"
+          [src]="product.imageUrl"
+          [alt]="product.name"
+          (error)="$any($event.target).style.display='none'"
+        >
+
+        <span class="image-placeholder">
+          REFURBISHED TECH
+        </span>
+
+      </a>
+
+      <!-- PRODUCT INFORMATION -->
+      <div class="product-info">
+
+        <span class="brand">
+          {{ product.brand }}
+        </span>
+
+        <!-- PRODUCT NAME -->
+        <a
+          [routerLink]="['/products', product.id]"
+          class="product-name-link"
+        >
+          <h3>{{ product.name }}</h3>
+        </a>
+
+        <!-- DESCRIPTION -->
+        <p class="description">
+          {{ product.description }}
+        </p>
+
+        <!-- WARRANTY AND STOCK -->
+        <div class="product-meta">
+
+          <span>
+            ✓ {{ product.warrantyMonths }} months warranty
+          </span>
+
+          <span [class.out-of-stock]="product.stock <= 0">
+            {{
+              product.stock > 0
+                ? 'In Stock'
+                : 'Out of Stock'
+            }}
+          </span>
+
+        </div>
+
+        <!-- PRICE -->
+        <div class="product-footer">
+
+          <strong>
+            {{
+              product.price |
+              currency:'INR':'symbol':'1.0-0'
+            }}
+          </strong>
+
+          <a
+            [routerLink]="['/products', product.id]"
+            class="details-link"
+          >
+            View Details →
+          </a>
+
+        </div>
+
+        <!-- COMPARE BUTTON -->
+        <button
+          type="button"
+          class="product-compare-button"
+          [class.selected]="isCompared(product.id)"
+          (click)="toggleCompare(product)"
+        >
+          {{
+            isCompared(product.id)
+              ? '✓ Added to Compare'
+              : '⇄ Compare Product'
+          }}
+        </button>
+
+      </div>
+
+    </div>
+
+  </div>
+
+</section>
+
+<!-- FOOTER -->
+<footer class="footer">
+
+  <h2>ReTech</h2>
+
+  <p>Giving great technology a second life.</p>
+
+  <span>
+    © 2026 ReTech. College E-Commerce Project.
+  </span>
+
+</footer>
